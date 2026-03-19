@@ -7,12 +7,12 @@
     .hero-section {
         background: linear-gradient(165deg, #0f172a 0%, #1e3a5f 35%, #1a4a7a 60%, #0c4a6e 100%);
         position: relative;
-        overflow: hidden;
     }
     .hero-section::before {
         content: '';
         position: absolute;
         inset: 0;
+        pointer-events: none;
         background: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.03'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
     }
     .hero-section::after {
@@ -23,11 +23,13 @@
         right: 0;
         height: 120px;
         background: linear-gradient(to top, #f8fafc, transparent);
+        pointer-events: none;
     }
     .search-panel {
         background: rgba(255,255,255,0.97);
         backdrop-filter: blur(20px);
         box-shadow: 0 25px 60px -12px rgba(0,0,0,0.25), 0 0 0 1px rgba(255,255,255,0.1);
+        overflow: visible;
     }
     .field-group { position: relative; }
     .field-group .field-icon {
@@ -48,18 +50,23 @@
         padding-left: 42px;
         cursor: pointer; user-select: none;
     }
+    /* Custom dropdown trigger chevron alignment */
     .custom-select-trigger .chevron-icon {
+        position: absolute;
+        right: 14px;
+        top: 50%;
+        transform: translateY(-50%);
         transition: transform 0.2s;
     }
     .dropdown-open .custom-select-trigger .chevron-icon {
-        transform: rotate(180deg);
+        transform: translateY(-50%) rotate(180deg);
     }
     /* Custom dropdown panel */
     .custom-dropdown {
         position: absolute; top: calc(100% + 6px); left: 0; right: 0;
-        background: white; border-radius: 12px;
+        background: #ffffff; border-radius: 12px;
         box-shadow: 0 12px 40px -8px rgba(0,0,0,0.15), 0 0 0 1px rgba(0,0,0,0.04);
-        z-index: 9999; overflow: hidden;
+        z-index: 9999;
         opacity: 0; transform: translateY(-4px); pointer-events: none;
         transition: opacity 0.15s, transform 0.15s;
     }
@@ -160,6 +167,35 @@
     .flatpickr-day.flatpickr-disabled {
         color: #cbd5e1 !important;
     }
+    /* Mobile field styling — individual bordered rows */
+    @media (max-width: 1023px) {
+        .field-group {
+            background: #f8fafc;
+            border: 1px solid #e2e8f0;
+            border-radius: 12px;
+            overflow: visible;
+        }
+        .field-group:focus-within {
+            border-color: #93c5fd;
+            background: #eff6ff;
+        }
+        .field-group.dropdown-open {
+            border-color: #93c5fd;
+            background: #eff6ff;
+        }
+    }
+    /* Flatpickr responsive calendar on small screens */
+    @media (max-width: 359px) {
+        .flatpickr-calendar {
+            width: calc(100vw - 32px) !important;
+            left: 16px !important;
+            right: 16px !important;
+        }
+        .dayContainer {
+            min-width: 100% !important;
+            max-width: 100% !important;
+        }
+    }
     .result-card { transition: transform 0.25s cubic-bezier(.4,0,.2,1), box-shadow 0.25s cubic-bezier(.4,0,.2,1); }
     .result-card:hover { transform: translateY(-6px); box-shadow: 0 25px 50px -12px rgba(0,0,0,0.15); }
     .spinner { width: 44px; height: 44px; border: 4px solid #e2e8f0; border-top-color: #2563eb; border-radius: 50%; animation: spin 0.7s linear infinite; }
@@ -177,7 +213,7 @@
 <!-- ============================================================
      HERO SECTION
 ============================================================ -->
-<section class="hero-section flex flex-col items-center justify-center px-4 pt-16 pb-28 relative z-10">
+<section class="hero-section flex flex-col items-center justify-center px-4 pt-16 pb-40 lg:pb-28 relative z-10">
     <div class="relative z-20 w-full max-w-5xl text-center mb-8 animate-fade-in-up">
         <div class="inline-flex items-center gap-2 bg-white/10 backdrop-blur-sm border border-white/20 rounded-full px-3.5 py-1 mb-4">
             <span class="w-1.5 h-1.5 bg-emerald-400 rounded-full animate-pulse"></span>
@@ -194,7 +230,7 @@
     <!-- ============================================================
          SEARCH PANEL
     ============================================================ -->
-    <div class="relative z-20 w-full max-w-5xl animate-fade-in-up animate-delay-2">
+    <div class="relative z-30 w-full max-w-5xl animate-fade-in-up animate-delay-2">
         <div class="search-panel rounded-2xl lg:rounded-full px-3 py-3 lg:px-4">
             <form id="searchForm" novalidate class="flex flex-col lg:flex-row lg:items-center gap-2 lg:gap-0">
 
@@ -223,12 +259,12 @@
                 </div>
 
                 <!-- Guests (Custom Dropdown) -->
-                <div class="field-group flex-1 relative" id="guestDropdownWrap">
+                <div class="field-group flex-1 relative z-10" id="guestDropdownWrap">
                     <svg class="field-icon h-5 w-5" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
                         <path d="M9 6a3 3 0 11-6 0 3 3 0 016 0zM17 6a3 3 0 11-6 0 3 3 0 016 0zM12.93 17c.046-.327.07-.66.07-1a6.97 6.97 0 00-1.5-4.33A5 5 0 0119 16v1h-6.07zM6 11a5 5 0 015 5v1H1v-1a5 5 0 015-5z"/>
                     </svg>
                     <input type="hidden" id="guest_count" name="guest_count" value="2" />
-                    <div class="custom-select-trigger w-full rounded-xl lg:rounded-full py-3.5 text-slate-800 text-sm font-medium flex items-center justify-between pr-3" onclick="toggleDropdown('guest')">
+                    <div class="custom-select-trigger w-full rounded-xl lg:rounded-full py-3.5 text-slate-800 text-sm font-medium flex items-center pr-10" onclick="toggleDropdown('guest')">
                         <span id="guestLabel">2 Guests</span>
                         <svg class="chevron-icon h-4 w-4 text-slate-400" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clip-rule="evenodd"/></svg>
                     </div>
@@ -253,7 +289,7 @@
                 </div>
 
                 <!-- Search Button -->
-                <div class="lg:pl-2">
+                <div class="relative z-0 lg:pl-2">
                     <button type="submit" id="searchBtn"
                             class="w-full lg:w-auto bg-brand-600 hover:bg-brand-700 active:scale-95 text-white font-bold py-3.5 px-8 rounded-xl lg:rounded-full text-sm transition-all duration-200 shadow-lg hover:shadow-brand-500/30 flex items-center justify-center gap-2 whitespace-nowrap disabled:opacity-70 disabled:cursor-not-allowed">
                         <svg id="searchIcon" xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
@@ -431,7 +467,7 @@
         altInput: true,
         altFormat: 'M j, Y',
         minDate: 'today',
-        disableMobile: false,
+        disableMobile: true,
         monthSelectorType: 'static',
         onChange: function(selectedDates) {
             if (selectedDates.length) {
@@ -455,7 +491,7 @@
         altInput: true,
         altFormat: 'M j, Y',
         minDate: new Date(today.getTime() + 86400000),
-        disableMobile: false,
+        disableMobile: true,
         monthSelectorType: 'static',
         onChange: function() { clearError(); }
     });
