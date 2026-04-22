@@ -23,15 +23,19 @@ jobs:
           npm ci
           npm run build
 
-      - name: Copy built assets to server
-        uses: appleboy/scp-action@v0.1.7
-        with:
-          host: ${{ secrets.HOSTINGER_SSH_HOST }}
-          username: ${{ secrets.HOSTINGER_SSH_USER }}
-          key: ${{ secrets.HOSTINGER_SSH_KEY }}
-          port: ${{ secrets.HOSTINGER_SSH_PORT }}
-          source: "public/build/"
-          target: "/home/u988484627/domains/hotel-booking.researchsoft.in/public/"
+      - name: Setup SSH Key
+        run: |
+          mkdir -p ~/.ssh
+          echo "${{ secrets.HOSTINGER_SSH_KEY }}" > ~/.ssh/id_ed25519
+          chmod 600 ~/.ssh/id_ed25519
+          ssh-keyscan -p ${{ secrets.HOSTINGER_SSH_PORT }} ${{ secrets.HOSTINGER_SSH_HOST }} >> ~/.ssh/known_hosts
+
+      - name: Copy built assets via SCP
+        run: |
+          scp -P ${{ secrets.HOSTINGER_SSH_PORT }} \
+            -i ~/.ssh/id_ed25519 \
+            -r public/build \
+            ${{ secrets.HOSTINGER_SSH_USER }}@${{ secrets.HOSTINGER_SSH_HOST }}:/home/u988484627/domains/hotel-booking.researchsoft.in/public/
 
       - name: Deploy via SSH
         uses: appleboy/ssh-action@v1.0.3
@@ -43,25 +47,20 @@ jobs:
           script: |
             cd /home/u988484627/domains/hotel-booking.researchsoft.in
 
-            # Pull latest code
             git pull origin main
 
-            # Install PHP dependencies
             composer install --no-dev --optimize-autoloader
 
-            # Run migrations
             php artisan migrate --force
 
-            # Fix storage symlink (manual absolute path to avoid public_html symlink confusion)
+            # Fix storage symlink
             rm -f public/storage
             ln -s /home/u988484627/domains/hotel-booking.researchsoft.in/storage/app/public \
                   /home/u988484627/domains/hotel-booking.researchsoft.in/public/storage
 
-            # Set permissions
             chmod -R 755 storage
             chmod -R 755 storage/app/public
             chmod -R 755 bootstrap/cache
 
-            # Clear and rebuild cache
             php artisan optimize:clear
             php artisan optimize
